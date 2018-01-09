@@ -22,6 +22,10 @@ var argv = require("optimist").usage("git-release-notes [<options>] <since>..<un
 .options("s", {
 	"alias": "script"
 })
+.options("r", {
+	"alias": "repo",
+	"default": ""
+})
 .options("o", {
 	"alias": "gitlog-option",
 	"default" : []
@@ -36,7 +40,8 @@ var argv = require("optimist").usage("git-release-notes [<options>] <since>..<un
 	"b": "Git branch, defaults to master",
 	"s": "External script to rewrite the commit history",
 	"c": "Only use merge commits",
-	"o": "Additional git log options AND ignore 'c' option"
+	"o": "Additional git log options AND ignore 'c' option",
+	"r": "Git repository information used to generate links to the commit"
 })
 .boolean("version")
 .check(function (argv) {
@@ -95,7 +100,7 @@ fs.readFile(template, function (err, templateContent) {
 				mergeCommits: options.c,
 				additionalOptions: Array.isArray(options.o) ? options.o : [options.o]
 			}, function (commits) {
-				postProcess(templateContent, commits);
+				postProcess(templateContent, options, commits);
 			});
 		});
 	}
@@ -116,7 +121,9 @@ function getOptions (callback) {
 						t: stored.t || stored.title || argv.t,
 						m: stored.m || stored.meaning || argv.m,
 						p: stored.p || stored.path || argv.p,
-						c: stored.c || stored.mergeCommits || argv.c
+						c: stored.c || stored.mergeCommits || argv.c,
+						o: stored.o || stored.additionalOptions || argv.o,
+						r: stored.r || stored.repo || argv.r
 					};
 				} catch (ex) {
 					console.error("Invalid JSON in configuration file");
@@ -131,7 +138,7 @@ function getOptions (callback) {
 	}
 }
 
-function postProcess(templateContent, commits) {
+function postProcess(templateContent, options, commits) {
 	debug("Got %d commits", commits.length);
 	if (commits.length) {
 		if (argv.s) {
@@ -155,7 +162,7 @@ function postProcess(templateContent, commits) {
 				};
 				externalScript(inputData, function (data) {
 					outputData = data;
-					render(templateContent, data);
+					render(templateContent, options, data);
 				});
 				debug("Waiting for external script to call the callback");
 			} catch (ex) {
@@ -167,7 +174,7 @@ function postProcess(templateContent, commits) {
 			}
 		} else {
 			debug("Rendering template without post processing");
-			render(templateContent, { commits: commits });
+			render(templateContent, options, { commits: commits });
 		}
 	} else {
 		console.error('No commits in the specified range');
@@ -175,10 +182,11 @@ function postProcess(templateContent, commits) {
 	}
 }
 
-function render(templateContent, data) {
+function render(templateContent, options, data) {
 	debug("Rendering template");
 	var output = ejs.render(templateContent.toString(), Object.assign({
 		range: argv._[0],
+		callOptions: options,
 		dateFnsFormat: dateFnsFormat
 	}, data));
 	process.stdout.write(output + "\n");
