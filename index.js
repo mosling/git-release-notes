@@ -22,9 +22,9 @@ var argv = require("optimist").usage("git-release-notes [<options>] <since>..<un
 .options("s", {
 	"alias": "script"
 })
-.options("r", {
-	"alias": "repo",
-	"default": ""
+.options("i", {
+	"alias": "info",
+	"default": {}
 })
 .options("o", {
 	"alias": "gitlog-option",
@@ -41,7 +41,7 @@ var argv = require("optimist").usage("git-release-notes [<options>] <since>..<un
 	"s": "External script to rewrite the commit history",
 	"c": "Only use merge commits",
 	"o": "Additional git log options AND ignore 'c' option",
-	"r": "Git repository information used to generate links to the commit"
+	"i": "some info which is given to the template processing as callOptions.i"
 })
 .boolean("version")
 .check(function (argv) {
@@ -123,7 +123,7 @@ function getOptions (callback) {
 						p: stored.p || stored.path || argv.p,
 						c: stored.c || stored.mergeCommits || argv.c,
 						o: stored.o || stored.additionalOptions || argv.o,
-						r: stored.r || stored.repo || argv.r
+						i: stored.i || stored.info || argv.i
 					};
 				} catch (ex) {
 					console.error("Invalid JSON in configuration file");
