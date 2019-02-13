@@ -183,7 +183,8 @@ function postProcess(templateContent, options, commits) {
 }
 
 function render(templateContent, options, data) {
-	debug("Rendering template");
+	debug("Rendering template")
+	debug(JSON.stringify(data))
 	var output = ejs.render(templateContent.toString(), Object.assign({
 		range: argv._[0],
 		callOptions: options,
