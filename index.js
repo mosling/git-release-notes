@@ -41,7 +41,7 @@ var argv = require("optimist").usage("git-release-notes [<options>] <since>..<un
 	"s": "External script to rewrite the commit history",
 	"c": "Only use merge commits",
 	"o": "Additional git log options AND ignore 'c' option",
-	"i": "some info which is given to the template processing as callOptions.i"
+	"i": "Some information which is given to the template processing as callOptions.i"
 })
 .boolean("version")
 .check(function (argv) {
